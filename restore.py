@@ -2,9 +2,10 @@
 # -*- coding: utf-8 -*-
 
 import subprocess, re, sys, os
+from time import sleep, time
 
 server = sys.argv[1] if len(sys.argv) > 1 else u'backup'
-dir    = sys.argv[2] if len(sys.argv) > 2 else u'backup'
+sshdir = sys.argv[2] if len(sys.argv) > 2 else u'backup'
 
 class bcolors:
     BLACK      = '\033[30m'
@@ -65,7 +66,7 @@ class bcolors:
     REVERSE   = '\033[7m'
     INVISIBLE = '\033[8m'
 
-cmd = u'ssh %s \'ls -la --time-style long-iso "%s"\'' % (server, dir)
+cmd = u'ssh %s \'ls -la --time-style long-iso "%s"\'' % (server, sshdir)
 print cmd
 try:
     process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -102,16 +103,20 @@ page = 0
 def getchfunc():
     import termios
     import sys, tty
-    def _getch():
-        fd = sys.stdin.fileno()
-        old_settings = termios.tcgetattr(fd)
-        try:
-            tty.setraw(fd)
-            ch = sys.stdin.read(1)
-        finally:
-            termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
-        return ch
+    if sys.stdin.isatty():
+        def _getch():
+            fd = sys.stdin.fileno()
+            old_settings = termios.tcgetattr(fd)
+            try:
+                tty.setraw(fd)
+                ch = sys.stdin.read(1)
+            finally:
+                termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+            return ch
 
+    else:
+        def _getch():
+            return sys.stdin.read(1)
     return _getch
 
 def sizeof_fmt(num, suffix='B'):
@@ -199,7 +204,7 @@ while True:
             s = int(c)
             download = True
             break
-        elif c == 13:
+        elif k == 13:
             sys.stdout.write(bcolors.COL0 + bcolors.CLEAREOL + bcolors.UP % up_count)
             download = True
             break
@@ -229,14 +234,15 @@ while True:
         sys.stdout.write(bcolors.CLEAREOL+"\n")
         sys.stdout.write(bcolors.CLEAREOL+"\n")
 
-        file_name = file_list[s][7]
-        src_path = os.path.join(dir,file_name)
+        file_info = file_list[s]
+        file_name = file_info[7]
+        src_path = os.path.join(sshdir,file_name)
         dest_path = os.path.join(dest,file_name)
 
         print "     Remote:"
         print "         Server: %s%s%s" % (bcolors.RED, server, bcolors.ENDC + bcolors.CLEAREOL)
-        print "         Folder: %s%s%s" % (bcolors.RED, dir, bcolors.ENDC + bcolors.CLEAREOL)
-        print "         File  : %s%s%s" % (bcolors.RED, file_list[s][7], bcolors.ENDC + bcolors.CLEAREOL)
+        print "         Folder: %s%s%s" % (bcolors.RED, sshdir, bcolors.ENDC + bcolors.CLEAREOL)
+        print "         File  : %s%s%s" % (bcolors.RED, file_name, bcolors.ENDC + bcolors.CLEAREOL)
         print "     " + bcolors.CLEAREOL
         print "     Local:" + bcolors.CLEAREOL
         print "         Folder: %s%s%s" % (bcolors.RED, dest, bcolors.ENDC + bcolors.CLEAREOL)
@@ -262,5 +268,25 @@ if download and (c == 'y' or c == 'Y'):
     cmd = u'scp -p %s:"%s" "%s"' % (server, src_path, dest_path)
     print cmd
     stdout = subprocess.Popen(cmd, shell=True, stdout=sys.stdout, stderr=sys.stderr, stdin=sys.stdin)
+
+    # start = time()
+    # max_wait = 30.0
+    # w = 60
+    # pos = 0
+    # full = int(file_info[4])
+    # seg = full / w
+    # cur = 0
+    #
+    # while (time() - start) < max_wait and cur < full:
+    #     if os.path.exists(dest_path):
+    #         cur = os.path.getsize(dest_path)
+    #         new_pos = int(round(cur / seg))
+    #         if new_pos > pos:
+    #             sys.stdout.write(u"•" * (new_pos-pos))
+    #             pos = new_pos
+    #
+    #     sleep(0.1)
+    print ""
+
 else:
     print ""

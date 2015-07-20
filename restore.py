@@ -7,7 +7,7 @@ from time import sleep, time
 server = sys.argv[1] if len(sys.argv) > 1 else u'backup'
 sshdir = sys.argv[2] if len(sys.argv) > 2 else u'backup'
 
-class bcolors:
+class ansi:
     BLACK      = '\033[30m'
     RED        = '\033[31m'
     GREEN      = '\033[32m'
@@ -130,7 +130,7 @@ getch = getchfunc()
 s = 0
 k = ''
 
-def subColor(target_re, s, replace=ur'\1',color=bcolors.MAGENTA, reset=bcolors.ENDC):
+def subColor(target_re, s, replace=ur'\1',color=ansi.MAGENTA, reset=ansi.ENDC):
     return re.sub(target_re, color + replace + reset, s)
 
 pages = (len(fs)+9) / 10
@@ -139,9 +139,9 @@ while True:
 
     while True:
 
-        print "\n\n  Page %d of %d   Key: %s %s" % (page+1, pages, k, bcolors.CLEAREOL)
-        sys.stdout.write(bcolors.CLEAREOL+"\n")
-        sys.stdout.write(bcolors.CLEAREOL+"\n")
+        print "\n\n  Page %d of %d   Key: %s %s" % (page+1, pages, k, ansi.CLEAREOL)
+        sys.stdout.write(ansi.CLEAREOL+"\n")
+        sys.stdout.write(ansi.CLEAREOL+"\n")
 
         width = max([len(f[7]) for f in fs[page*10:page*10+10]])+1
 
@@ -152,11 +152,11 @@ while True:
 
             sel = i == s
             colors = {
-                "fg": bcolors.BLACK + bcolors.BOLD if sel else '',
-                "bg": bcolors.IBGYELLOW if sel else '',
-                "hifg": bcolors.IRED + bcolors.BOLD if sel else bcolors.RED,
-                "hibg": bcolors.IBGYELLOW if sel else '',
-                "reset": bcolors.ENDC + bcolors.CLEAREOL
+                "fg": ansi.BLACK + ansi.BOLD if sel else '',
+                "bg": ansi.IBGYELLOW if sel else '',
+                "hifg": ansi.IRED + ansi.BOLD if sel else ansi.RED,
+                "hibg": ansi.IBGYELLOW if sel else '',
+                "reset": ansi.ENDC + ansi.CLEAREOL
             }
 
             file_name = f[7]
@@ -170,9 +170,9 @@ while True:
 
         if len(file_list) < 10:
             for i in range(0,10-len(file_list)):
-                print bcolors.CLEAREOL
+                print ansi.CLEAREOL
 
-        print "\n\n" + bcolors.UP % 2
+        print "\n\n" + ansi.UP % 2
 
         more_pages = page*10+10 < len(fs)
 
@@ -182,13 +182,13 @@ while True:
         upper = '' if len(file_list) == 1 else '-'+"-0123456789"[len(file_list)]
         part1 = "Download 0%s or %s" % (upper, " or ".join(ops))
 
-        part1 = re.sub(ur"([0-9QPN])",bcolors.MAGENTA + ur'\1' + bcolors.ENDC, part1) + " "
+        part1 = re.sub(ur"([0-9QPN])",ansi.MAGENTA + ur'\1' + ansi.ENDC, part1) + " "
 
         part2 = "  Destination: %s%s %s      "
         dist = len(part2) - 6 + len(dest)
-        part2 = part2 % (bcolors.CYAN, dest, bcolors.ENDC + bcolors.CLEAREOL)
+        part2 = part2 % (ansi.CYAN, dest, ansi.ENDC + ansi.CLEAREOL)
 
-        sys.stdout.write(part1 + part2 + bcolors.LEFT % dist)
+        sys.stdout.write(part1 + part2 + ansi.LEFT % dist)
 
         c = getch()
         k = ord(c)
@@ -196,20 +196,20 @@ while True:
         up_count = 5 + 10 + 1
 
         if c == 'q' or c == 'Q':
-            sys.stdout.write(bcolors.COL0 + bcolors.CLEAREOL + bcolors.UP % up_count)
+            sys.stdout.write(ansi.COL0 + ansi.CLEAREOL + ansi.UP % up_count)
             print ""
             sys.exit(0)
         elif c >= '0' and c <= '9':
-            sys.stdout.write(bcolors.COL0 + bcolors.CLEAREOL + bcolors.UP % up_count)
+            sys.stdout.write(ansi.COL0 + ansi.CLEAREOL + ansi.UP % up_count)
             s = int(c)
             download = True
             break
         elif k == 13:
-            sys.stdout.write(bcolors.COL0 + bcolors.CLEAREOL + bcolors.UP % up_count)
+            sys.stdout.write(ansi.COL0 + ansi.CLEAREOL + ansi.UP % up_count)
             download = True
             break
         else:
-            sys.stdout.write(bcolors.UP % up_count)
+            sys.stdout.write(ansi.UP % up_count)
             if more_pages and (c == 'n' or c == 'N'):
                 page += 1
             elif page > 0 and (c == 'p' or c == 'P'):
@@ -227,12 +227,12 @@ while True:
 
     if download:
         for i in range(0, up_count):
-            print bcolors.CLEAREOL
-        sys.stdout.write(bcolors.UP % up_count)
+            print ansi.CLEAREOL
+        sys.stdout.write(ansi.UP % up_count)
 
-        sys.stdout.write(bcolors.CLEAREOL+"\n")
-        sys.stdout.write(bcolors.CLEAREOL+"\n")
-        sys.stdout.write(bcolors.CLEAREOL+"\n")
+        sys.stdout.write(ansi.CLEAREOL+"\n")
+        sys.stdout.write(ansi.CLEAREOL+"\n")
+        sys.stdout.write(ansi.CLEAREOL+"\n")
 
         file_info = file_list[s]
         file_name = file_info[7]
@@ -240,15 +240,15 @@ while True:
         dest_path = os.path.join(dest,file_name)
 
         print "     Remote:"
-        print "         Server: %s%s%s" % (bcolors.RED, server, bcolors.ENDC + bcolors.CLEAREOL)
-        print "         Folder: %s%s%s" % (bcolors.RED, sshdir, bcolors.ENDC + bcolors.CLEAREOL)
-        print "         File  : %s%s%s" % (bcolors.RED, file_name, bcolors.ENDC + bcolors.CLEAREOL)
-        print "     " + bcolors.CLEAREOL
-        print "     Local:" + bcolors.CLEAREOL
-        print "         Folder: %s%s%s" % (bcolors.RED, dest, bcolors.ENDC + bcolors.CLEAREOL)
-        print "     " + bcolors.CLEAREOL
-        print("     Overwritting Existing File!" if os.path.exists(os.path.join(dest,file_name)) else "") + bcolors.CLEAREOL
-        print "     " + bcolors.CLEAREOL
+        print "         Server: %s%s%s" % (ansi.RED, server, ansi.ENDC + ansi.CLEAREOL)
+        print "         Folder: %s%s%s" % (ansi.RED, sshdir, ansi.ENDC + ansi.CLEAREOL)
+        print "         File  : %s%s%s" % (ansi.RED, file_name, ansi.ENDC + ansi.CLEAREOL)
+        print "     " + ansi.CLEAREOL
+        print "     Local:" + ansi.CLEAREOL
+        print "         Folder: %s%s%s" % (ansi.RED, dest, ansi.ENDC + ansi.CLEAREOL)
+        print "     " + ansi.CLEAREOL
+        print("     Overwritting Existing File!" if os.path.exists(os.path.join(dest,file_name)) else "") + ansi.CLEAREOL
+        print "     " + ansi.CLEAREOL
         sys.stdout.write(subColor(ur'([0-9A-Z])',"     Yes or Cancel or Return to list? "))
 
         c = ' '
@@ -258,7 +258,7 @@ while True:
         print "\n"
 
         if c == 'r' or c == 'R':
-            sys.stdout.write(bcolors.COL0 + bcolors.CLEAREOL + bcolors.UP % (up_count - 1))
+            sys.stdout.write(ansi.COL0 + ansi.CLEAREOL + ansi.UP % (up_count - 1))
             continue
 
         break
@@ -268,24 +268,6 @@ if download and (c == 'y' or c == 'Y'):
     cmd = u'scp -p %s:"%s" "%s"' % (server, src_path, dest_path)
     print cmd
     stdout = subprocess.Popen(cmd, shell=True, stdout=sys.stdout, stderr=sys.stderr, stdin=sys.stdin)
-
-    # start = time()
-    # max_wait = 30.0
-    # w = 60
-    # pos = 0
-    # full = int(file_info[4])
-    # seg = full / w
-    # cur = 0
-    #
-    # while (time() - start) < max_wait and cur < full:
-    #     if os.path.exists(dest_path):
-    #         cur = os.path.getsize(dest_path)
-    #         new_pos = int(round(cur / seg))
-    #         if new_pos > pos:
-    #             sys.stdout.write(u"•" * (new_pos-pos))
-    #             pos = new_pos
-    #
-    #     sleep(0.1)
     print ""
 
 else:
